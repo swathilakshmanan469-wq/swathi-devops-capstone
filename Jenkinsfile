@@ -72,19 +72,19 @@ pipeline {
 
         stage('Verify EC2 Backup and Cron') {
             steps {
-                echo 'Checking existing backup scripts and cron jobs'
+                echo 'Checking EC2 application mounts, backup scripts and cron jobs'
 
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 '
+                            echo "===== APP CONTAINER MOUNTS ====="
+                            sudo docker inspect --format "{{json .Mounts}}" swathi-capstone
+
                             echo "===== USER CRONTAB ====="
                             crontab -l 2>&1 || true
 
                             echo "===== ROOT CRONTAB ====="
                             sudo crontab -l 2>&1 || true
-
-                            echo "===== SYSTEM CRON FOLDERS ====="
-                            ls -la /etc/cron.d /etc/cron.daily 2>/dev/null || true
 
                             echo "===== BACKUP SCRIPTS ====="
                             find /home/ubuntu -maxdepth 3 -type f -iname "*backup*" -print 2>/dev/null
