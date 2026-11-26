@@ -9,6 +9,13 @@ pipeline {
                 checkout scm
             }
         }
+stage('Test') {
+    steps {
+        echo 'Running Node.js application tests'
+        sh 'npm install'
+        sh 'npm test'
+    }
+}
 
         stage('Build Docker Image') {
             steps {
