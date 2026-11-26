@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevOps Capstone Dashboard</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        a.card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -17,12 +24,9 @@
 <main>
     <section class="hero">
         <p class="tag">END-TO-END DEVOPS AUTOMATION</p>
-
         <h1>Welcome to My DevOps Project</h1>
-
         <p>Building, Deploying and Monitoring Applications
         with Modern DevOps Tools.</p>
-
         <div class="status">
             <span class="dot"></span>
             Application Running
@@ -31,14 +35,18 @@
 
     <section class="content">
         <h2>Technology Stack</h2>
-
         <div class="cards">
-            <div class="card">Git & GitHub</div>
-            <div class="card">Jenkins</div>
-            <div class="card">Docker</div>
-            <div class="card">AWS EC2</div>
-            <div class="card">Prometheus</div>
-            <div class="card">Grafana</div>
+            <a class="card" href="https://github.com/swathilakshmanan469-wq/swathi-devops-capstone" target="_blank" rel="noopener noreferrer">Git & GitHub</a>
+
+            <a class="card" href="http://localhost:8080" target="_blank" rel="noopener noreferrer">Jenkins</a>
+
+            <a class="card" href="https://hub.docker.com/r/swathilakshmanan/swathi-devops-app" target="_blank" rel="noopener noreferrer">Docker</a>
+
+            <a class="card" href="https://ap-south-1.console.aws.amazon.com/ec2/home?region=ap-south-1#Instances:" target="_blank" rel="noopener noreferrer">AWS EC2</a>
+
+            <a class="card" href="http://15.207.88.211:9090" target="_blank" rel="noopener noreferrer">Prometheus</a>
+
+            <a class="card" href="http://15.207.88.211:3000" target="_blank" rel="noopener noreferrer">Grafana</a>
         </div>
     </section>
 </main>
@@ -49,4 +57,3 @@
 
 </body>
 </html>
-
