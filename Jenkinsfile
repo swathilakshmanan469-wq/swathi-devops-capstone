@@ -40,7 +40,6 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                echo 'Pushing image to Docker Hub'
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
@@ -56,8 +55,6 @@ pipeline {
 
         stage('Deploy to AWS EC2') {
             steps {
-                echo 'Deploying application to EC2'
-
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 '
@@ -70,28 +67,58 @@ pipeline {
             }
         }
 
-        stage('Verify EC2 Backup and Cron') {
+        stage('Setup Backup and Cron Automation') {
             steps {
-                echo 'Checking EC2 application mounts, backup scripts and cron jobs'
+                echo 'Setting up automated application log backup and cleanup'
 
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 '
-                            echo "===== APP CONTAINER MOUNTS ====="
-                            sudo docker inspect --format "{{json .Mounts}}" swathi-capstone
+                        ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 'sudo bash -s' <<'REMOTE'
+set -e
 
-                            echo "===== USER CRONTAB ====="
-                            crontab -l 2>&1 || true
+mkdir -p /var/backups/swathi-capstone
+chmod 750 /var/backups/swathi-capstone
 
-                            echo "===== ROOT CRONTAB ====="
-                            sudo crontab -l 2>&1 || true
+cat > /usr/local/sbin/swathi-capstone-backup.sh <<'SCRIPT'
+#!/bin/bash
+set -euo pipefail
 
-                            echo "===== BACKUP SCRIPTS ====="
-                            find /home/ubuntu -maxdepth 3 -type f -iname "*backup*" -print 2>/dev/null
+BACKUP_DIR="/var/backups/swathi-capstone"
+STAMP=$(date -u +%Y%m%d_%H%M%S)
+TEMP_FILE="$BACKUP_DIR/app-logs-$STAMP.txt.gz.tmp"
+FINAL_FILE="$BACKUP_DIR/app-logs-$STAMP.txt.gz"
 
-                            echo "===== CLEANUP SCRIPTS ====="
-                            find /home/ubuntu -maxdepth 3 -type f -iname "*cleanup*" -print 2>/dev/null
-                        '
+mkdir -p "$BACKUP_DIR"
+
+/usr/bin/docker logs --since 24h --timestamps swathi-capstone 2>&1 | /usr/bin/gzip -c > "$TEMP_FILE"
+
+mv "$TEMP_FILE" "$FINAL_FILE"
+
+find "$BACKUP_DIR" -type f -name 'app-logs-*.txt.gz' -mtime +7 -delete
+
+echo "Backup completed: $FINAL_FILE"
+SCRIPT
+
+chmod 750 /usr/local/sbin/swathi-capstone-backup.sh
+
+cat > /etc/cron.d/swathi-capstone-backup <<'CRON'
+0 1 * * * root /usr/local/sbin/swathi-capstone-backup.sh >> /var/log/swathi-capstone-backup.log 2>&1
+CRON
+
+chmod 644 /etc/cron.d/swathi-capstone-backup
+
+systemctl enable --now cron
+
+echo "===== RUNNING FIRST BACKUP ====="
+/usr/local/sbin/swathi-capstone-backup.sh
+
+echo "===== BACKUP FILES ====="
+ls -lh /var/backups/swathi-capstone/
+
+echo "===== CRON SCHEDULE ====="
+cat /etc/cron.d/swathi-capstone-backup
+
+REMOTE
                     '''
                 }
             }
