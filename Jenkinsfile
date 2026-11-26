@@ -13,11 +13,19 @@ stage('Test') {
     steps {
         echo 'Running Node.js application tests'
         sh '''
-            docker run --rm \
-              -v "$WORKSPACE:/app" \
-              -w /app \
-              node:24 \
-              sh -c "npm install && npm test"
+            set -e
+            TEST_CONTAINER="capstone-test-${BUILD_NUMBER}"
+
+            cleanup() {
+                docker rm -f "$TEST_CONTAINER" >/dev/null 2>&1 || true
+            }
+            trap cleanup EXIT
+
+            docker create --name "$TEST_CONTAINER" node:24 sleep 300
+            docker start "$TEST_CONTAINER"
+            docker exec "$TEST_CONTAINER" mkdir -p /app
+            docker cp "$WORKSPACE/." "$TEST_CONTAINER:/app"
+            docker exec -w /app "$TEST_CONTAINER" sh -c "npm install && npm test"
         '''
     }
 }
