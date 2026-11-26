@@ -12,8 +12,13 @@ pipeline {
 stage('Test') {
     steps {
         echo 'Running Node.js application tests'
-        sh 'npm install'
-        sh 'npm test'
+        sh '''
+            docker run --rm \
+              -v "$WORKSPACE:/app" \
+              -w /app \
+              node:24 \
+              sh -c "npm install && npm test"
+        '''
     }
 }
 
