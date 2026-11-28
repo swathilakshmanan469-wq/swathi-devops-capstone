@@ -73,9 +73,9 @@ docker rm -f swathi-capstone-container
 
 ## CI/CD Pipeline Flow
 
-The Jenkins job is named `Swathi-DevOps-Capstone`. Its pipeline stages are:
+The Jenkins job is named `Swathi-DevOps-Capstone`. Jenkins polls the GitHub `main` branch every 5 minutes and starts a build when it detects a new commit. The pipeline stages are:
 
-1. **Checkout** - retrieve the latest source from the GitHub `main` branch.
+1. **Checkout** - retrieve the latest source from the GitHub `main` branch after a manual start or an SCM change detected by polling.
 2. **Test** - run the Node.js test suite in a temporary Node.js container. The verified run passed 2 tests with 0 failures.
 3. **Build Docker Image** - build the app image for `linux/amd64`.
 4. **Push to Docker Hub** - authenticate with a Jenkins-stored credential and push `swathilakshmanan/swathi-devops-app:v1`.
