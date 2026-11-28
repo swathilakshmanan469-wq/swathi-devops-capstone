@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -57,7 +56,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 '
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.3.131 '
                             sudo docker pull swathilakshmanan/swathi-devops-app:v1 &&
                             (sudo docker rm -f swathi-capstone || true) &&
                             sudo docker run -d --name swathi-capstone -p 80:3000 --restart unless-stopped swathilakshmanan/swathi-devops-app:v1
@@ -73,7 +72,7 @@ pipeline {
 
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@15.207.88.211 'sudo bash -s' <<'REMOTE'
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.3.131 'sudo bash -s' <<'REMOTE'
 set -e
 
 mkdir -p /var/backups/swathi-capstone
